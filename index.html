@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spooky Halloween Photo Booth</title>
+    <title>Stuco Halloween Photo Booth</title>
     <style>
         :root {
             --bg-color: #12121a;
@@ -201,6 +201,7 @@
 
     <!-- SCREEN 1: START PAGE -->
     <div id="screen-start" class="screen active">
+        <p>Billingual Student Council</p>
         <h1>🎃 2026 Halloween Photo Booth 👻</h1>
         <p>Have fun, pose, and create your custom memory strips!</p>
         <button class="btn" onclick="startBooth()">Start Photobooth</button>
@@ -225,7 +226,7 @@
     <!-- SCREEN 4: REORDER & BACKGROUND SELECTION -->
     <div id="screen-arrange" class="screen">
         <h2>Style Your Photostrip</h2>
-        <p>Choose your 2x6 photostrip theme:</p>
+        <p>Choose your 2x6 photostrip background:</p>
         <div class="bg-picker" id="bgPickerContainer">
             <div class="bg-option selected" style="background-image: url('Red and stars.JPG');" title="Red Stars" onclick="setBg('Red and stars.JPG', this)"></div>
             <div class="bg-option" style="background-image: url('Black background.JPG');" title="Black Background" onclick="setBg('Black background.JPG', this)"></div>
