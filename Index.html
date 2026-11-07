@@ -6,7 +6,7 @@
     <title>Spooky Halloween Photo Booth</title>
     <style>
         :root {
-            --bg-color: #1a1a2e;
+            --bg-color: #12121a;
             --accent-orange: #ff7518;
             --accent-purple: #7b2cbf;
             --text-light: #f8f9fa;
@@ -23,6 +23,22 @@
             justify-content: center;
             min-height: 100vh;
             overflow-x: hidden;
+        }
+        /* Camera Flash Overlay */
+        #flashOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.05s ease-out;
+        }
+        #flashOverlay.flash {
+            opacity: 1;
         }
         .screen {
             display: none;
@@ -53,8 +69,8 @@
             background-color: var(--accent-orange);
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 1.5rem;
+            padding: 18px 36px;
+            font-size: 1.4rem;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
@@ -76,11 +92,11 @@
             transform: scaleX(-1);
         }
         #countdownDisplay {
-            font-size: 5rem;
+            font-size: 5.5rem;
             color: var(--accent-orange);
             font-weight: bold;
-            margin: 20px 0;
-            text-shadow: 0 0 20px rgba(255,117,24,0.8);
+            margin: 15px 0;
+            text-shadow: 0 0 25px rgba(255,117,24,0.8);
         }
         /* Grid Selections */
         .grid-container {
@@ -123,27 +139,54 @@
             justify-content: center;
             font-weight: bold;
         }
-        /* Background Picker */
+        /* Custom Background Options */
         .bg-picker {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         .bg-option {
-            width: 60px;
-            height: 90px;
+            width: 65px;
+            height: 100px;
             border-radius: 8px;
             cursor: pointer;
             border: 3px solid transparent;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .bg-option.selected {
             border-color: var(--accent-orange);
             transform: scale(1.1);
         }
+        /* Background Styles matching uploaded images */
+        .bg-starry {
+            background-color: #120b18;
+            background-image: radial-gradient(#ffffff 1px, transparent 1px), radial-gradient(#ffe4a0 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        .bg-dark {
+            background-color: #0d0d0d;
+        }
+        .bg-cream {
+            background-color: #fcf9ee;
+        }
+        .bg-film {
+            background-color: #181818;
+            border-left: 6px dashed #777;
+            border-right: 6px dashed #777;
+        }
+        .bg-damask {
+            background-color: #1a181c;
+            background-image: radial-gradient(#342e38 2px, transparent 2px);
+            background-size: 16px 16px;
+        }
         /* Photostrip Preview */
         #stripPreviewContainer {
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             display: inline-block;
@@ -152,6 +195,8 @@
 </head>
 <body>
 
+    <div id="flashOverlay"></div>
+
     <!-- SCREEN 1: START PAGE -->
     <div id="screen-start" class="screen active">
         <h1>🎃 Spooky Halloween Photo Booth 👻</h1>
@@ -159,7 +204,7 @@
         <button class="btn" onclick="startBooth()">Start Photobooth</button>
     </div>
 
-    <!-- SCREEN 2: CAPTURE SCREEN -->
+    <!-- SCREEN 2: CAPTURE SCREEN WITH FLASH -->
     <div id="screen-capture" class="screen">
         <h2 id="captureStatus" style="color: var(--accent-orange); margin-bottom: 5px;">Get Ready!</h2>
         <div id="countdownDisplay">10</div>
@@ -172,23 +217,23 @@
         <h2>Choose Your 4 Favorite Photos</h2>
         <p>Tap your 4 best shots out of the 6 you took:</p>
         <div class="grid-container" id="thumbnailGrid"></div>
-        <button class="btn" id="confirmSelectionBtn" onclick="goToArrangeScreen()" disabled style="opacity: 0.5;">Next: Arrange Photos</button>
+        <button class="btn" id="confirmSelectionBtn" onclick="goToArrangeScreen()" disabled style="opacity: 0.5;">Next: Arrange & Style</button>
     </div>
 
-    <!-- SCREEN 4: ARRANGE & BACKGROUND PAGE -->
+    <!-- SCREEN 4: REORDER & BACKGROUND SELECTION -->
     <div id="screen-arrange" class="screen">
         <h2>Style Your Photostrip</h2>
-        <p>Choose a spooky background theme for your strip:</p>
+        <p>Choose your photostrip background theme:</p>
         <div class="bg-picker" id="bgPickerContainer">
-            <div class="bg-option selected" style="background: #111;" onclick="setBg('#111', this)"></div>
-            <div class="bg-option" style="background: #3b0764;" onclick="setBg('#3b0764', this)"></div>
-            <div class="bg-option" style="background: #7c2d12;" onclick="setBg('#7c2d12', this)"></div>
-            <div class="bg-option" style="background: #064e3b;" onclick="setBg('#064e3b', this)"></div>
-            <div class="bg-option" style="background: #581c87;" onclick="setBg('#581c87', this)"></div>
+            <div class="bg-option bg-starry selected" title="Starry Night" onclick="setBg('starry', this)"></div>
+            <div class="bg-option bg-dark" title="Onyx Dark" onclick="setBg('dark', this)"></div>
+            <div class="bg-option bg-cream" title="Vintage Cream" onclick="setBg('cream', this)"></div>
+            <div class="bg-option bg-film" title="35mm Film Strip" onclick="setBg('film', this)"></div>
+            <div class="bg-option bg-damask" title="Halloween Wallpaper" onclick="setBg('damask', this)"></div>
         </div>
-        <p style="font-size: 0.9rem; margin-bottom: 10px;">Drag or reorder your chosen photos below (Top to Bottom):</p>
-        <div id="arrangeList" style="display: flex; flex-direction: column; gap: 10px; width: 220px; margin-bottom: 20px;"></div>
-        <button class="btn" onclick="generateFinalPreview()">Generate Final Preview</button>
+        <p style="font-size: 0.95rem; margin-bottom: 10px;">Reorder photos (Top to Bottom):</p>
+        <div id="arrangeList" style="display: flex; flex-direction: column; gap: 10px; width: 240px; margin-bottom: 20px;"></div>
+        <button class="btn" onclick="generateFinalPreview()">Finish & Preview</button>
     </div>
 
     <!-- SCREEN 5: FINAL PREVIEW & PRINT -->
@@ -209,16 +254,18 @@
         let stream = null;
         let capturedPhotos = [];
         let selectedIndices = [];
-        let chosenBackground = '#111';
+        let chosenTheme = 'starry';
 
         async function startBooth() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 960, aspectRatio: 4/3 } });
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 1280 }, height: { ideal: 960 }, aspectRatio: 4/3 } 
+                });
                 document.getElementById('videoElement').srcObject = stream;
                 switchScreen('screen-capture');
                 startCaptureSequence();
             } catch (err) {
-                alert("Camera access denied or unavailable. Please allow camera permissions in Safari.");
+                alert("Camera access denied or unavailable. Please enable permissions in Safari.");
             }
         }
 
@@ -232,7 +279,9 @@
             for (let i = 1; i <= 6; i++) {
                 document.getElementById('shotCounter').innerText = `Photo ${i} of 6`;
                 await runCountdown(10);
+                triggerFlash();
                 takeSnapshot();
+                await new Promise(r => setTimeout(r, 400));
             }
             if (stream) stream.getTracks().forEach(t => t.stop());
             buildThumbnailGrid();
@@ -255,14 +304,27 @@
             });
         }
 
+        function triggerFlash() {
+            const flash = document.getElementById('flashOverlay');
+            flash.classList.add('flash');
+            setTimeout(() => {
+                flash.classList.remove('flash');
+            }, 300);
+        }
+
         function takeSnapshot() {
             const video = document.getElementById('videoElement');
             const canvas = document.getElementById('hiddenCanvas');
-            canvas.width = 800;
-            canvas.height = 600;
+            canvas.width = 1200;
+            canvas.height = 900;
             const ctx = canvas.getContext('2d');
+            
+            // Mirror image to match live view
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            capturedPhotos.push(canvas.toDataURL('image/jpeg', 0.9));
+            
+            capturedPhotos.push(canvas.toDataURL('image/jpeg', 0.95));
         }
 
         function buildThumbnailGrid() {
@@ -287,7 +349,7 @@
                     selectedIndices.push(index);
                     cardElement.classList.add('selected');
                 } else {
-                    alert("You can only select 4 photos!");
+                    alert("You can only choose 4 photos!");
                 }
             }
             const btn = document.getElementById('confirmSelectionBtn');
@@ -309,10 +371,10 @@
                 row.style.alignItems = 'center';
                 row.style.gap = '10px';
                 row.innerHTML = `
-                    <span style="font-weight:bold;">#${idx+1}</span>
-                    <img src="${capturedPhotos[photoIndex]}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 4px;">
-                    <button onclick="movePhoto(${idx}, -1)" style="padding: 5px 10px;">⬆️</button>
-                    <button onclick="movePhoto(${idx}, 1)" style="padding: 5px 10px;">⬇️</button>
+                    <span style="font-weight:bold; width: 25px;">#${idx+1}</span>
+                    <img src="${capturedPhotos[photoIndex]}" style="width: 90px; height: 67px; object-fit: cover; border-radius: 4px;">
+                    <button onclick="movePhoto(${idx}, -1)" style="padding: 6px 12px; font-size: 1.1rem;">⬆️</button>
+                    <button onclick="movePhoto(${idx}, 1)" style="padding: 6px 12px; font-size: 1.1rem;">⬇️</button>
                 `;
                 list.appendChild(row);
             });
@@ -329,8 +391,8 @@
             }
         }
 
-        function setBg(color, element) {
-            chosenBackground = color;
+        function setBg(themeName, element) {
+            chosenTheme = themeName;
             document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('selected'));
             element.classList.add('selected');
         }
@@ -338,29 +400,66 @@
         function generateFinalPreview() {
             const canvas = document.getElementById('finalCanvas');
             const ctx = canvas.getContext('2d');
-            const container = document.getElementById('stripPreviewContainer');
-            container.style.backgroundColor = chosenBackground;
 
-            // Fill background
-            ctx.fillStyle = chosenBackground;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Render Background according to chosen theme
+            if (chosenTheme === 'starry') {
+                ctx.fillStyle = '#120b18';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                for(let i = 0; i < 80; i++) {
+                    let rx = Math.random() * canvas.width;
+                    let ry = Math.random() * canvas.height;
+                    let r = Math.random() * 2 + 0.5;
+                    ctx.beginPath();
+                    ctx.arc(rx, ry, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (chosenTheme === 'dark') {
+                ctx.fillStyle = '#0d0d0d';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (chosenTheme === 'cream') {
+                ctx.fillStyle = '#fcf9ee';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (chosenTheme === 'film') {
+                ctx.fillStyle = '#141414';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Draw 35mm film side holes
+                ctx.fillStyle = '#ffffff';
+                for (let y = 15; y < canvas.height; y += 30) {
+                    ctx.fillRect(10, y, 15, 12);
+                    ctx.fillRect(canvas.width - 25, y, 15, 12);
+                }
+            } else if (chosenTheme === 'damask') {
+                ctx.fillStyle = '#1a181c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#2a2430';
+                for (let x = 10; x < canvas.width; x += 30) {
+                    for (let y = 10; y < canvas.height; y += 30) {
+                        ctx.fillRect(x, y, 4, 4);
+                    }
+                }
+            }
 
-            // Draw 4 photos stacked vertically in 4:3 ratio
+            // Draw 4 photo frames vertically
             let loadedCount = 0;
+            const textColor = (chosenTheme === 'cream') ? '#1a1a1a' : '#ffffff';
+
             selectedIndices.forEach((photoIdx, i) => {
                 const img = new Image();
                 img.src = capturedPhotos[photoIdx];
                 img.onload = () => {
-                    const x = 50;
-                    const y = 40 + (i * 200);
-                    ctx.drawImage(img, x, y, 500, 375);
+                    const x = (chosenTheme === 'film') ? 50 : 40;
+                    const y = 35 + (i * 200);
+                    const w = (chosenTheme === 'film') ? 500 : 520;
+                    const h = 180;
+
+                    ctx.drawImage(img, x, y, w, h);
                     loadedCount++;
                     if (loadedCount === 4) {
-                        // Add Footer Text
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 24px sans-serif';
+                        ctx.fillStyle = textColor;
+                        ctx.font = 'bold 22px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('🎃 Halloween Booth 2026 👻', canvas.width / 2, 870);
+                        ctx.fillText('🎃 HALLOWEEN 2026 👻', canvas.width / 2, 865);
                         switchScreen('screen-final');
                     }
                 };
