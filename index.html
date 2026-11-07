@@ -149,14 +149,12 @@
             flex-wrap: wrap;
         }
         .bg-option {
-            width: 60px;
-            height: 95px;
+            width: 55px;
+            height: 90px;
             border-radius: 6px;
             cursor: pointer;
             border: 3px solid transparent;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            background-size: cover;
-            background-position: center;
         }
         .bg-option.selected {
             border-color: var(--accent-orange);
@@ -205,11 +203,11 @@
         <h2>Style Your Photostrip</h2>
         <p>Choose your 2x6 photostrip theme:</p>
         <div class="bg-picker" id="bgPickerContainer">
-            <div class="bg-option selected" style="background-image: url('Red and stars.JPG');" title="Red Stars" onclick="setBg('Red and stars.JPG', this)"></div>
-            <div class="bg-option" style="background-image: url('Black background.JPG');" title="Black Background" onclick="setBg('Black background.JPG', this)"></div>
-            <div class="bg-option" style="background-image: url('White background.jpg');" title="White Background" onclick="setBg('White background.jpg', this)"></div>
-            <div class="bg-option" style="background-image: url('Blackcollage.JPG');" title="Film Collage" onclick="setBg('Blackcollage.JPG', this)"></div>
-            <div class="bg-option" style="background-image: url('Black pumpkin.JPG');" title="Black Pumpkin" onclick="setBg('Black pumpkin.JPG', this)"></div>
+            <div class="bg-option selected" style="background: radial-gradient(#fff 1px, transparent 1px), #120b18; background-size: 15px 15px;" title="Starry Night" onclick="setBg('starry', this)"></div>
+            <div class="bg-option" style="background: #0d0d0d;" title="Onyx Dark" onclick="setBg('dark', this)"></div>
+            <div class="bg-option" style="background: #fcf9ee;" title="Vintage Cream" onclick="setBg('cream', this)"></div>
+            <div class="bg-option" style="background: #181818; border-left: 5px dashed #666; border-right: 5px dashed #666;" title="Film Strip" onclick="setBg('film', this)"></div>
+            <div class="bg-option" style="background: #1a181c;" title="Halloween Damask" onclick="setBg('damask', this)"></div>
         </div>
         <p style="font-size: 0.9rem; margin-bottom: 10px;">Reorder photos (Top to Bottom):</p>
         <div id="arrangeList" style="display: flex; flex-direction: column; gap: 8px; width: 220px; margin-bottom: 20px;"></div>
@@ -234,7 +232,7 @@
         let stream = null;
         let capturedPhotos = [];
         let selectedIndices = [];
-        let chosenBgImage = 'Red and stars.JPG';
+        let chosenTheme = 'starry';
 
         async function startBooth() {
             try {
@@ -258,7 +256,7 @@
             capturedPhotos = [];
             for (let i = 1; i <= 6; i++) {
                 document.getElementById('shotCounter').innerText = `Photo ${i} of 6`;
-                await runCountdown(5);
+                await runCountdown(5); // 5-second interval
                 triggerFlash();
                 takeSnapshot();
                 await new Promise(r => setTimeout(r, 400));
@@ -370,8 +368,8 @@
             }
         }
 
-        function setBg(bgFileName, element) {
-            chosenBgImage = bgFileName;
+        function setBg(themeName, element) {
+            chosenTheme = themeName;
             document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('selected'));
             element.classList.add('selected');
         }
@@ -380,48 +378,76 @@
             const canvas = document.getElementById('finalCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = 600;
-            canvas.height = 1800; // Classic 2x6 photostrip ratio
+            canvas.height = 1800; // Classic 2x6 vertical strip proportion
 
-            const bgImg = new Image();
-            bgImg.src = chosenBgImage;
-            
-            bgImg.onload = () => {
-                // Draw full original background image
-                ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-                drawPhotosOnCanvas(canvas, ctx);
-            };
-
-            bgImg.onerror = () => {
-                // Fallback background if image isn't loaded yet
+            // Draw Background Theme
+            if (chosenTheme === 'starry') {
                 ctx.fillStyle = '#120b18';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                drawPhotosOnCanvas(canvas, ctx);
-            };
-        }
+                ctx.fillStyle = '#ffffff';
+                for(let i = 0; i < 100; i++) {
+                    let rx = Math.random() * canvas.width;
+                    let ry = Math.random() * canvas.height;
+                    let r = Math.random() * 2 + 0.5;
+                    ctx.beginPath();
+                    ctx.arc(rx, ry, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (chosenTheme === 'dark') {
+                ctx.fillStyle = '#0d0d0d';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (chosenTheme === 'cream') {
+                ctx.fillStyle = '#fcf9ee';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (chosenTheme === 'film') {
+                ctx.fillStyle = '#141414';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                for (let y = 20; y < canvas.height; y += 40) {
+                    ctx.fillRect(12, y, 18, 16);
+                    ctx.fillRect(canvas.width - 30, y, 18, 16);
+                }
+            } else if (chosenTheme === 'damask') {
+                ctx.fillStyle = '#1a181c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#2d2633';
+                for (let x = 15; x < canvas.width; x += 35) {
+                    for (let y = 15; y < canvas.height; y += 35) {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
 
-        function drawPhotosOnCanvas(canvas, ctx) {
+            // Draw 4 pictures cleanly in 4:3 ratio without distortion
             let loadedCount = 0;
-            
+            const textColor = (chosenTheme === 'cream') ? '#1a1a1a' : '#ffffff';
+
             selectedIndices.forEach((photoIdx, i) => {
                 const img = new Image();
                 img.src = capturedPhotos[photoIdx];
                 img.onload = () => {
                     const marginX = 50;
                     const photoWidth = 500;
-                    const photoHeight = 375; // 4:3 aspect ratio
+                    const photoHeight = 375; // Exact 4:3 proportion (500 * 3/4)
                     const spacing = 35;
                     const startY = 80;
                     const y = startY + (i * (photoHeight + spacing));
 
-                    // Subtle photo border
+                    // Optional white photo border frame
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(marginX - 4, y - 4, photoWidth + 8, photoHeight + 8);
+                    ctx.fillRect(marginX - 6, y - 6, photoWidth + 12, photoHeight + 12);
 
-                    // Draw captured user photo
                     ctx.drawImage(img, marginX, y, photoWidth, photoHeight);
                     loadedCount++;
                     
                     if (loadedCount === 4) {
+                        // Footer Branding Text
+                        ctx.fillStyle = textColor;
+                        ctx.font = 'bold 28px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('🎃 HALLOWEEN BOOTH 2026 👻', canvas.width / 2, 1730);
                         switchScreen('screen-final');
                     }
                 };
