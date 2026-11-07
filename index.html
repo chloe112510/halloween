@@ -80,13 +80,6 @@
             transform: scale(1.05);
             background-color: #ff8c3a;
         }
-        .btn-purple {
-            background-color: var(--accent-purple);
-            box-shadow: 0 4px 15px rgba(123,44,191,0.4);
-        }
-        .btn-purple:hover {
-            background-color: #8c3acc;
-        }
         #videoElement {
             width: 100%;
             max-width: 550px;
@@ -252,9 +245,8 @@
             <canvas id="finalCanvas" width="600" height="1800" style="width: 150px; height: 450px; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.6);"></canvas>
         </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-            <button class="btn btn-purple" onclick="shareOrSavePhoto()">Save / AirDrop Photo</button>
-            <button class="btn" onclick="window.print()">Print (Dual 4x6)</button>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button class="btn" onclick="triggerPrint()">Print (Dual 4x6)</button>
             <button class="btn" style="background-color: #4a5568;" onclick="location.reload()">Start Over</button>
         </div>
     </div>
@@ -470,11 +462,9 @@
             printCanvas.width = 1200;
             printCanvas.height = 1800;
 
-            // Side-by-side 2x6 duplication on 4x6 canvas
             printCtx.drawImage(screenCanvas, 0, 0, 600, 1800);
             printCtx.drawImage(screenCanvas, 600, 0, 600, 1800);
 
-            // Cutting line down middle
             printCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             printCtx.setLineDash([12, 12]);
             printCtx.beginPath();
@@ -483,28 +473,8 @@
             printCtx.stroke();
         }
 
-        async function shareOrSavePhoto() {
-            const canvas = document.getElementById('finalCanvas');
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], 'halloween-photostrip.jpg', { type: 'image/jpeg' });
-                
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'My Halloween Photostrip',
-                            text: 'Spooky photostrip memory!'
-                        });
-                    } catch (err) {
-                        console.log('Share prompt closed');
-                    }
-                } else {
-                    const link = document.createElement('a');
-                    link.download = 'halloween-photostrip.jpg';
-                    link.href = canvas.toDataURL('image/jpeg', 0.95);
-                    link.click();
-                }
-            }, 'image/jpeg', 0.95);
+        function triggerPrint() {
+            window.print();
         }
     </script>
 </body>
