@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Stuco Halloween Photo Booth</title>
+    <title>Stuco Halloween Photo Booth</title>
     <style>
         :root {
             --bg-color: #12121a;
@@ -82,12 +82,12 @@
         }
         #videoElement {
             width: 100%;
-            max-width: 550px;
-            height: 412px;
+            max-width: 500px;
+            height: 380px;
             object-fit: cover;
             border-radius: 15px;
             border: 4px solid var(--accent-purple);
-            transform: scaleX(-1);
+            transform: scaleX(-1) scale(1.35);
         }
         #countdownDisplay {
             font-size: 5rem;
@@ -166,33 +166,6 @@
             margin-bottom: 15px;
             display: inline-block;
         }
-
-        /* AirPrint Strict 4x6 Configuration */
-        @page {
-            size: 4in 6in;
-            margin: 0;
-        }
-        @media print {
-            html, body {
-                width: 4in;
-                height: 6in;
-                margin: 0;
-                padding: 0;
-                background: none;
-            }
-            body * {
-                visibility: hidden;
-            }
-            #printCanvas {
-                visibility: visible !important;
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 100vw;
-                height: 100vh;
-                object-fit: contain;
-            }
-        }
     </style>
 </head>
 <body>
@@ -201,10 +174,10 @@
 
     <!-- SCREEN 1: START PAGE -->
     <div id="screen-start" class="screen active">
-        <h1 style="margin-bottom:5px;">🎃 2026 Halloween Photo Booth 👻</h1>
+        <p style="font-size: 0.9rem; margin-bottom: 5px;">Bilingual Student Council</p>
+        <h1 style="margin-top: 0;">🎃 2026 Halloween Photo Booth 👻</h1>
         <p>Have fun, pose, and create your custom memory strips!</p>
         <button class="btn" onclick="startBooth()">Start Photobooth</button>
-        <p style="font-size: 0.5rem; "margin-bottom: 0.2px;">Brought to you by: Bilingual Student Council</p>
     </div>
 
     <!-- SCREEN 2: CAPTURE SCREEN (5s INTERVAL) -->
@@ -463,11 +436,18 @@
             printCanvas.width = 1200;
             printCanvas.height = 1800;
 
+            // Fill white background for print canvas
+            printCtx.fillStyle = '#ffffff';
+            printCtx.fillRect(0, 0, 1200, 1800);
+
+            // Draw Left Strip & Right Strip side by side
             printCtx.drawImage(screenCanvas, 0, 0, 600, 1800);
             printCtx.drawImage(screenCanvas, 600, 0, 600, 1800);
 
-            printCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            printCtx.setLineDash([12, 12]);
+            // Draw dashed center cut guide line
+            printCtx.strokeStyle = 'rgba(200, 200, 200, 0.7)';
+            printCtx.lineWidth = 3;
+            printCtx.setLineDash([15, 15]);
             printCtx.beginPath();
             printCtx.moveTo(600, 0);
             printCtx.lineTo(600, 1800);
@@ -475,7 +455,30 @@
         }
 
         function triggerPrint() {
-            window.print();
+            const printCanvas = document.getElementById('printCanvas');
+            const dataUrl = printCanvas.toDataURL('image/png');
+            const printWindow = window.open('', '_blank');
+            
+            if (printWindow) {
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Print Photostrip</title>
+                            <style>
+                                @page { size: 4in 6in; margin: 0; }
+                                body { margin: 0; display: flex; justify-content: center; align-items: center; background: #fff; height: 100vh; }
+                                img { width: 100%; height: 100%; object-fit: contain; }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${dataUrl}" onload="window.print();" />
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } else {
+                alert("Please allow pop-ups for this site so the print dialog can open.");
+            }
         }
     </script>
 </body>
